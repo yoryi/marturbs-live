@@ -28,7 +28,6 @@ import {
 } from "@/lib/media";
 import { usePeerCall } from "@/lib/peer/usePeerCall";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { cn, formatDuration } from "@/lib/utils";
 
 function ModelCallContent() {
@@ -38,8 +37,7 @@ function ModelCallContent() {
   const searchParams = useSearchParams();
   const roomFromQuery = searchParams.get("room");
 
-  const [roomInput, setRoomInput] = useState(roomFromQuery ?? "");
-  const [activeRoom, setActiveRoom] = useState(roomFromQuery ?? "");
+  const roomId = (roomFromQuery ?? "").trim();
   const [seconds, setSeconds] = useState(0);
   const [muted, setMuted] = useState(false);
   const [videoOff, setVideoOff] = useState(false);
@@ -50,8 +48,6 @@ function ModelCallContent() {
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const endingRef = useRef(false);
   const joinedAtRef = useRef(0);
-
-  const roomId = activeRoom.trim();
 
   const {
     localStream,
@@ -69,8 +65,10 @@ function ModelCallContent() {
   });
 
   useEffect(() => {
-    if (roomFromQuery) setActiveRoom(roomFromQuery);
-  }, [roomFromQuery]);
+    if (!roomFromQuery && user?.role === "model") {
+      router.replace("/model/dashboard");
+    }
+  }, [roomFromQuery, user?.role, router]);
 
   useEffect(() => {
     if (roomId) {
@@ -159,25 +157,7 @@ function ModelCallContent() {
 
   if (!roomId) {
     return (
-      <div className="max-w-md mx-auto py-20 px-4">
-        <h1 className="text-2xl font-bold mb-2">{t("call.modelCallTitle")}</h1>
-        <p className="text-soft-white/50 text-sm mb-6">{t("call.modelCallSubtitle")}</p>
-        <Input
-          placeholder={t("modelPanel.roomPlaceholder")}
-          value={roomInput}
-          onChange={(e) => setRoomInput(e.target.value)}
-        />
-        <Button
-          className="w-full mt-4"
-          onClick={() => setActiveRoom(roomInput.trim())}
-          disabled={!roomInput.trim()}
-        >
-          {t("modelPanel.joinCall")}
-        </Button>
-        <Link href="/model/dashboard" className="block text-center text-sm text-soft-white/40 mt-6">
-          {t("call.back")}
-        </Link>
-      </div>
+      <div className="py-20 text-center text-soft-white/50">{t("common.loading")}</div>
     );
   }
 
@@ -197,9 +177,7 @@ function ModelCallContent() {
             <Wifi className="w-12 h-12 text-neon-purple mb-4 animate-pulse" />
             <p className="text-lg font-semibold">{t("call.modelCallTitle")}</p>
             <p className="text-soft-white/50 text-sm mt-2">{t("call.waitingHint")}</p>
-            <p className="text-xs text-soft-white/30 mt-4 font-mono">
-              {t("call.roomCode")}: {roomId}
-            </p>
+            <p className="text-sm text-soft-white/50 mt-2">{t("call.waitingHint")}</p>
           </div>
         )}
 

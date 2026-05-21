@@ -18,6 +18,17 @@ const socket_io_1 = require("socket.io");
 let EventsGateway = class EventsGateway {
     server;
     roomPeers = new Map();
+    pendingCalls = new Map();
+    modelQueueRoom(modelId) {
+        return `model-queue-${modelId}`;
+    }
+    getPendingForModel(modelId) {
+        return [...this.pendingCalls.values()].filter((r) => r.modelId === modelId);
+    }
+    notifyClient(req, event, payload) {
+        this.server.to(req.roomId).emit(event, payload);
+        this.server.to(req.clientSocketId).emit(event, payload);
+    }
     handleLeave(client, data) {
         client.leave(data.roomId);
         return { ok: true };
@@ -59,7 +70,115 @@ let EventsGateway = class EventsGateway {
     }
     handleSessionEnd(data) {
         this.roomPeers.delete(data.roomId);
+        for (const [id, req] of this.pendingCalls) {
+            if (req.roomId === data.roomId)
+                this.pendingCalls.delete(id);
+        }
         this.server.to(data.roomId).emit('sessionEnded', data);
+        return { ok: true };
+    }
+    handleJoinModelQueue(client, data) {
+        const room = this.modelQueueRoom(data.modelId);
+        client.join(room);
+        client.emit('callRequestsSnapshot', {
+            requests: this.getPendingForModel(data.modelId),
+        });
+        return { ok: true };
+    }
+    handleLeaveModelQueue(client, data) {
+        client.leave(this.modelQueueRoom(data.modelId));
+        return { ok: true };
+    }
+    handleRequestCall(client, data) {
+        const existing = [...this.pendingCalls.values()].find((r) => r.clientId === data.clientId && r.modelId === data.modelId);
+        if (existing) {
+            existing.clientSocketId = client.id;
+            client.join(existing.roomId);
+            client.emit('callQueued', {
+                requestId: existing.requestId,
+                roomId: existing.roomId,
+                position: 1,
+            });
+            return { ok: true, requestId: existing.requestId };
+        }
+        const requestId = `req-${data.modelId}-${data.clientId}-${Date.now()}`;
+        const request = {
+            requestId,
+            modelId: data.modelId,
+            clientId: data.clientId,
+            clientName: data.clientName,
+            clientAvatar: data.clientAvatar,
+            roomId: data.roomId,
+            createdAt: Date.now(),
+            clientSocketId: client.id,
+        };
+        this.pendingCalls.set(requestId, request);
+        client.join(data.roomId);
+        this.server
+            .to(this.modelQueueRoom(data.modelId))
+            .emit('callRequestIncoming', request);
+        client.emit('callQueued', {
+            requestId,
+            roomId: data.roomId,
+            position: this.getPendingForModel(data.modelId).length,
+        });
+        return { ok: true, requestId };
+    }
+    handleCancelCallRequest(data) {
+        const req = this.pendingCalls.get(data.requestId);
+        if (req) {
+            this.pendingCalls.delete(data.requestId);
+            this.server
+                .to(this.modelQueueRoom(req.modelId))
+                .emit('callRequestCancelled', { requestId: data.requestId });
+        }
+        if (req) {
+            this.notifyClient(req, 'callRejected', {
+                requestId: data.requestId,
+                reason: 'cancelled',
+            });
+        }
+        else {
+            this.server.to(data.roomId).emit('callRejected', {
+                requestId: data.requestId,
+                reason: 'cancelled',
+            });
+        }
+        return { ok: true };
+    }
+    handleAcceptCallRequest(client, data) {
+        const req = this.pendingCalls.get(data.requestId);
+        if (!req)
+            return { ok: false };
+        this.pendingCalls.delete(data.requestId);
+        for (const [id, other] of this.pendingCalls) {
+            if (other.modelId === req.modelId && other.clientId !== req.clientId) {
+                this.notifyClient(other, 'callRejected', {
+                    requestId: id,
+                    reason: 'busy',
+                });
+                this.pendingCalls.delete(id);
+            }
+        }
+        this.notifyClient(req, 'callAccepted', req);
+        client.emit('callAccepted', req);
+        this.server
+            .to(this.modelQueueRoom(req.modelId))
+            .emit('callRequestCancelled', { requestId: data.requestId });
+        return { ok: true };
+    }
+    handleRejectCallRequest(data) {
+        const req = this.pendingCalls.get(data.requestId);
+        if (!req)
+            return { ok: false };
+        this.pendingCalls.delete(data.requestId);
+        this.notifyClient(req, 'callRejected', {
+            requestId: data.requestId,
+            reason: 'rejected',
+        });
+        this.server
+            .to(this.modelQueueRoom(req.modelId))
+            .emit('callRequestCancelled', { requestId: data.requestId });
         return { ok: true };
     }
     handlePeerReady(client, data) {
@@ -120,6 +239,52 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], EventsGateway.prototype, "handleSessionEnd", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('joinModelQueue'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:returntype", void 0)
+], EventsGateway.prototype, "handleJoinModelQueue", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('leaveModelQueue'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:returntype", void 0)
+], EventsGateway.prototype, "handleLeaveModelQueue", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('requestCall'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:returntype", void 0)
+], EventsGateway.prototype, "handleRequestCall", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('cancelCallRequest'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], EventsGateway.prototype, "handleCancelCallRequest", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('acceptCallRequest'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:returntype", void 0)
+], EventsGateway.prototype, "handleAcceptCallRequest", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('rejectCallRequest'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], EventsGateway.prototype, "handleRejectCallRequest", null);
 __decorate([
     (0, websockets_1.SubscribeMessage)('peerReady'),
     __param(0, (0, websockets_1.ConnectedSocket)()),

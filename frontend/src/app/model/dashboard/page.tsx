@@ -15,6 +15,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { EarningsChart } from "@/components/model/EarningsChart";
+import { IncomingCallRequests } from "@/components/model/IncomingCallRequests";
 import { cn, formatCredits } from "@/lib/utils";
 import { formatPricePerMinute } from "@/lib/pricing";
 
@@ -33,13 +34,6 @@ const mockSessions = [
     duration: "08:12",
     earned: 98,
   },
-  {
-    id: "3",
-    client: "John D.",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop",
-    duration: "25:00",
-    earned: 300,
-  },
 ];
 
 export default function ModelDashboardPage() {
@@ -48,7 +42,6 @@ export default function ModelDashboardPage() {
   const [activeNav, setActiveNav] = useState("summary");
   const [isOnline, setIsOnline] = useState(true);
   const [pricePerMinute, setPricePerMinute] = useState(12);
-  const [callRoomId, setCallRoomId] = useState("");
 
   const nav = useMemo(
     () => [
@@ -131,112 +124,163 @@ export default function ModelDashboardPage() {
           {t("modelPanel.mobileTitle")}
         </h1>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="glass rounded-2xl p-6 border border-white/5">
-            <p className="text-sm text-soft-white/50 mb-4">{t("modelPanel.status")}</p>
-            <div className="flex items-center justify-between">
-              <span className="font-medium">
-                {isOnline ? t("modelPanel.visible") : t("modelPanel.notVisible")}
-              </span>
-              <button
-                onClick={() => setIsOnline(!isOnline)}
-                className={cn(
-                  "relative w-14 h-8 rounded-full transition-colors",
-                  isOnline ? "bg-emerald-500" : "bg-white/10",
-                )}
-              >
-                <span
-                  className={cn(
-                    "absolute top-1 w-6 h-6 rounded-full bg-white shadow transition-all",
-                    isOnline ? "left-7" : "left-1",
-                  )}
-                />
-              </button>
-            </div>
-            <p className="text-xs text-soft-white/40 mt-3 flex items-center gap-1">
-              <Power className="w-3 h-3" />
-              {t("modelPanel.activate")}
-            </p>
-          </div>
-
-          <div className="glass rounded-2xl p-6 border border-white/5">
-            <p className="text-sm text-soft-white/50 mb-2">{t("modelPanel.callRoom")}</p>
-            <p className="text-xs text-soft-white/40 mb-4">{t("modelPanel.callRoomHint")}</p>
-            <Input
-              placeholder={t("modelPanel.roomPlaceholder")}
-              value={callRoomId}
-              onChange={(e) => setCallRoomId(e.target.value)}
-            />
-            <Link
-              href={callRoomId.trim() ? `/model/call?room=${encodeURIComponent(callRoomId.trim())}` : "/model/call"}
-              className="block mt-4"
+        {/* Nav móvil */}
+        <div className="flex lg:hidden gap-2 overflow-x-auto mb-6 pb-2">
+          {nav.map(({ id, label }) => (
+            <button
+              key={id}
+              onClick={() => setActiveNav(id)}
+              className={cn(
+                "px-4 py-2 rounded-full text-sm whitespace-nowrap",
+                activeNav === id
+                  ? "bg-neon-pink/20 text-neon-pink"
+                  : "bg-white/5 text-soft-white/50",
+              )}
             >
-              <Button className="w-full" size="sm" variant="primary">
-                <Video className="w-4 h-4 mr-2 inline" />
-                {t("modelPanel.joinCall")}
-              </Button>
-            </Link>
-          </div>
-
-          <div className="glass rounded-2xl p-6 border border-white/5">
-            <Input
-              label={t("modelPanel.priceLabel")}
-              type="number"
-              value={pricePerMinute}
-              onChange={(e) => setPricePerMinute(Number(e.target.value))}
-              min={5}
-              max={50}
-            />
-            <p className="text-sm text-neon-pink mt-2">
-              {formatPricePerMinute(pricePerMinute, locale)}
-            </p>
-            <Button className="w-full mt-4" size="sm">
-              {t("modelPanel.savePrice")}
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          {stats.map((s) => (
-            <div
-              key={s.label}
-              className="glass rounded-2xl p-6 border border-white/5"
-            >
-              <p className="text-sm text-soft-white/50">{s.label}</p>
-              <p className="text-3xl font-bold text-soft-white mt-2">{s.value}</p>
-              <p className="text-xs text-soft-white/40">{s.sub}</p>
-            </div>
+              {label}
+            </button>
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          <EarningsChart />
-
-          <div className="glass rounded-2xl p-6 border border-white/5">
-            <h3 className="font-semibold mb-6">{t("modelPanel.recentSessions")}</h3>
-            <ul className="space-y-4">
-              {mockSessions.map((s) => (
-                <li
-                  key={s.id}
-                  className="flex items-center gap-4 p-3 rounded-xl bg-bg-main/50"
+        {activeNav === "sessions" && (
+          <div className="space-y-8 max-w-3xl">
+            <div className="glass rounded-2xl p-6 border border-white/5">
+              <p className="text-sm text-soft-white/50 mb-4">{t("modelPanel.status")}</p>
+              <div className="flex items-center justify-between">
+                <span className="font-medium">
+                  {isOnline ? t("modelPanel.visible") : t("modelPanel.notVisible")}
+                </span>
+                <button
+                  onClick={() => setIsOnline(!isOnline)}
+                  className={cn(
+                    "relative w-14 h-8 rounded-full transition-colors",
+                    isOnline ? "bg-emerald-500" : "bg-white/10",
+                  )}
                 >
-                  <img
-                    src={s.avatar}
-                    alt=""
-                    className="w-10 h-10 rounded-full object-cover"
+                  <span
+                    className={cn(
+                      "absolute top-1 w-6 h-6 rounded-full bg-white shadow transition-all",
+                      isOnline ? "left-7" : "left-1",
+                    )}
                   />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-soft-white">{s.client}</p>
-                    <p className="text-xs text-soft-white/40">{s.duration}</p>
-                  </div>
-                  <span className="text-gold font-bold">
-                    +{formatCredits(s.earned)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                </button>
+              </div>
+            </div>
+            <IncomingCallRequests isOnline={isOnline} />
+            <div className="glass rounded-2xl p-6 border border-white/5">
+              <h3 className="font-semibold mb-4">{t("modelPanel.recentSessions")}</h3>
+              <ul className="space-y-3">
+                {mockSessions.map((s) => (
+                  <li
+                    key={s.id}
+                    className="flex items-center gap-4 p-3 rounded-xl bg-bg-main/50"
+                  >
+                    <img src={s.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                    <div className="flex-1">
+                      <p className="font-medium">{s.client}</p>
+                      <p className="text-xs text-soft-white/40">{s.duration}</p>
+                    </div>
+                    <span className="text-gold font-bold">+{formatCredits(s.earned)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
+        )}
+
+        {activeNav === "summary" && (
+          <>
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              <div className="glass rounded-2xl p-6 border border-white/5">
+                <p className="text-sm text-soft-white/50 mb-4">{t("modelPanel.status")}</p>
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">
+                    {isOnline ? t("modelPanel.visible") : t("modelPanel.notVisible")}
+                  </span>
+                  <button
+                    onClick={() => setIsOnline(!isOnline)}
+                    className={cn(
+                      "relative w-14 h-8 rounded-full transition-colors",
+                      isOnline ? "bg-emerald-500" : "bg-white/10",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "absolute top-1 w-6 h-6 rounded-full bg-white shadow transition-all",
+                        isOnline ? "left-7" : "left-1",
+                      )}
+                    />
+                  </button>
+                </div>
+                <p className="text-xs text-soft-white/40 mt-3 flex items-center gap-1">
+                  <Power className="w-3 h-3" />
+                  {t("modelPanel.activate")}
+                </p>
+              </div>
+
+              <div className="glass rounded-2xl p-6 border border-white/5">
+                <Input
+                  label={t("modelPanel.priceLabel")}
+                  type="number"
+                  value={pricePerMinute}
+                  onChange={(e) => setPricePerMinute(Number(e.target.value))}
+                  min={5}
+                  max={50}
+                />
+                <p className="text-sm text-neon-pink mt-2">
+                  {formatPricePerMinute(pricePerMinute, locale)}
+                </p>
+                <Button className="w-full mt-4" size="sm">
+                  {t("modelPanel.savePrice")}
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+              {stats.map((s) => (
+                <div key={s.label} className="glass rounded-2xl p-6 border border-white/5">
+                  <p className="text-sm text-soft-white/50">{s.label}</p>
+                  <p className="text-3xl font-bold text-soft-white mt-2">{s.value}</p>
+                  <p className="text-xs text-soft-white/40">{s.sub}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-8">
+              <EarningsChart />
+              <div className="glass rounded-2xl p-6 border border-white/5">
+                <h3 className="font-semibold mb-6">{t("modelPanel.recentSessions")}</h3>
+                <ul className="space-y-4">
+                  {mockSessions.map((s) => (
+                    <li
+                      key={s.id}
+                      className="flex items-center gap-4 p-3 rounded-xl bg-bg-main/50"
+                    >
+                      <img src={s.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-soft-white">{s.client}</p>
+                        <p className="text-xs text-soft-white/40">{s.duration}</p>
+                      </div>
+                      <span className="text-gold font-bold">+{formatCredits(s.earned)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </>
+        )}
+
+        {activeNav === "earnings" && (
+          <div className="max-w-2xl">
+            <EarningsChart />
+          </div>
+        )}
+
+        {(activeNav === "profile" || activeNav === "settings") && (
+          <div className="glass rounded-2xl p-8 border border-white/5 text-center text-soft-white/50">
+            {t("modelPanel.comingSoon")}
+          </div>
+        )}
       </div>
     </div>
   );

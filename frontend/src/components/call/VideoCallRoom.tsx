@@ -231,10 +231,7 @@ export function VideoCallRoom({ model }: VideoCallRoomProps) {
                   {t("call.waiting", { name: model.name })}
                 </p>
                 <p className="text-sm text-soft-white/50 mt-2 max-w-sm">
-                  {t("call.waitingHint")}
-                </p>
-                <p className="text-xs text-soft-white/40 mt-4 font-mono bg-black/40 px-3 py-2 rounded-lg border border-white/10">
-                  {t("call.roomCode")}: <span className="text-neon-pink">{roomId}</span>
+                  {t("call.connectingVideo")}
                 </p>
               </div>
             </>
