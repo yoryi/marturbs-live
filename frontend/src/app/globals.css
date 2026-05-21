@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+:root {
+  --bg-main: #0b0b0f;
+  --bg-card: #1a1a22;
+  --neon-pink: #ff2d8e;
+  --neon-purple: #bd00ff;
+  --gold: #ffd700;
+  --soft-white: #f5f5f5;
+}
+
+@theme inline {
+  --color-bg-main: #0b0b0f;
+  --color-bg-card: #1a1a22;
+  --color-neon-pink: #ff2d8e;
+  --color-neon-purple: #bd00ff;
+  --color-gold: #ffd700;
+  --color-soft-white: #f5f5f5;
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-syne);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #ff2d8e40 transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-main);
+  color: var(--soft-white);
+  font-family: var(--font-outfit), system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Ambient background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, #bd00ff18, transparent),
+    radial-gradient(ellipse 60% 40% at 100% 50%, #ff2d8e0a, transparent),
+    radial-gradient(ellipse 50% 30% at 0% 80%, #bd00ff0c, transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Neon glow utilities */
+.glow-pink {
+  box-shadow:
+    0 0 20px #ff2d8e40,
+    0 0 40px #ff2d8e20,
+    inset 0 1px 0 #ffffff10;
+}
+
+.glow-purple {
+  box-shadow:
+    0 0 20px #bd00ff40,
+    0 0 40px #bd00ff20;
+}
+
+.glow-gold {
+  box-shadow: 0 0 20px #ffd70030;
+}
+
+.text-glow-pink {
+  text-shadow:
+    0 0 20px #ff2d8e80,
+    0 0 40px #ff2d8e40;
+}
+
+.text-glow-purple {
+  text-shadow:
+    0 0 20px #bd00ff80,
+    0 0 40px #bd00ff40;
+}
+
+.glass {
+  background: rgba(26, 26, 34, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, #ff2d8e, #bd00ff, #ff2d8e50);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}

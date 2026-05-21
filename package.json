@@ -1,0 +1,16 @@
+{
+  "name": "marturbs-live",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev:web": "npm run dev --prefix frontend",
+    "dev:api": "npm run start:dev --prefix backend",
+    "dev:peer": "node scripts/peer-server.cjs",
+    "build:web": "npm run build --prefix frontend",
+    "build:api": "npm run build --prefix backend",
+    "db:up": "docker compose up -d"
+  },
+  "devDependencies": {
+    "peer": "^1.0.2"
+  }
+}

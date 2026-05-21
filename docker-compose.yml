@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: marturbs-postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: marturbs
+      POSTGRES_PASSWORD: marturbs_secret
+      POSTGRES_DB: marturbs_live
+    volumes:
+      - marturbs_pg_data:/var/lib/postgresql/data
+
+  peer:
+    image: node:20-alpine
+    container_name: marturbs-peer
+    working_dir: /app
+    command: node scripts/peer-server.cjs
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/app
+    environment:
+      PEER_PORT: 9000
+      PEER_PATH: /marturbs
+
+volumes:
+  marturbs_pg_data:
