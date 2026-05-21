@@ -19,7 +19,6 @@ export interface CreditPackage {
   id: string;
   credits: number;
   price: number;
-  bonus: number;
   popular?: boolean;
 }
 
@@ -148,18 +147,16 @@ export const MOCK_MODELS: Model[] = [
 ];
 
 export const CREDIT_PACKAGES: CreditPackage[] = [
-  { id: "1", credits: 100, price: 9.99, bonus: 0 },
-  { id: "2", credits: 300, price: 24.99, bonus: 30, popular: true },
-  { id: "3", credits: 600, price: 44.99, bonus: 100 },
-  { id: "4", credits: 1200, price: 79.99, bonus: 300 },
-  { id: "5", credits: 3000, price: 179.99, bonus: 1000 },
+  { id: "1", credits: 100, price: 9.99 },
+  { id: "2", credits: 300, price: 24.99, popular: true },
+  { id: "3", credits: 600, price: 44.99 },
 ];
 
 export const MOCK_TRANSACTIONS: Transaction[] = [
-  { id: "t1", type: "purchase", amount: 24.99, credits: 330, date: "2026-05-18", status: "completed" },
+  { id: "t1", type: "purchase", amount: 24.99, credits: 300, date: "2026-05-18", status: "completed" },
   { id: "t2", type: "call", amount: 0, credits: -48, date: "2026-05-19", status: "completed" },
   { id: "t3", type: "call", amount: 0, credits: -72, date: "2026-05-19", status: "completed" },
-  { id: "t4", type: "purchase", amount: 44.99, credits: 700, date: "2026-05-20", status: "completed" },
+  { id: "t4", type: "purchase", amount: 44.99, credits: 600, date: "2026-05-20", status: "completed" },
 ];
 
 export const ADMIN_STATS = {

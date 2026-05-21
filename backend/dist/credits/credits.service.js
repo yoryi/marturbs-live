@@ -19,11 +19,9 @@ const typeorm_2 = require("typeorm");
 const user_entity_1 = require("../entities/user.entity");
 const transaction_entity_1 = require("../entities/transaction.entity");
 const PACKAGES = [
-    { id: '1', credits: 100, price: 9.99, bonus: 0 },
-    { id: '2', credits: 300, price: 24.99, bonus: 30 },
-    { id: '3', credits: 600, price: 44.99, bonus: 100 },
-    { id: '4', credits: 1200, price: 79.99, bonus: 300 },
-    { id: '5', credits: 3000, price: 179.99, bonus: 1000 },
+    { id: '1', credits: 100, price: 9.99 },
+    { id: '2', credits: 300, price: 24.99, popular: true },
+    { id: '3', credits: 600, price: 44.99 },
 ];
 let CreditsService = class CreditsService {
     userRepo;
@@ -46,7 +44,7 @@ let CreditsService = class CreditsService {
         const user = await this.userRepo.findOne({ where: { id: userId } });
         if (!user)
             throw new common_1.BadRequestException('Usuario no encontrado');
-        const totalCredits = pkg.credits + pkg.bonus;
+        const totalCredits = pkg.credits;
         user.credits += totalCredits;
         await this.userRepo.save(user);
         await this.txRepo.save({

@@ -2,12 +2,17 @@ import { CreditsService } from './credits.service';
 export declare class CreditsController {
     private creditsService;
     constructor(creditsService: CreditsService);
-    getPackages(): {
+    getPackages(): ({
         id: string;
         credits: number;
         price: number;
-        bonus: number;
-    }[];
+        popular?: undefined;
+    } | {
+        id: string;
+        credits: number;
+        price: number;
+        popular: boolean;
+    })[];
     balance(req: {
         user: {
             id: string;

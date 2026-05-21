@@ -5,12 +5,17 @@ export declare class CreditsService {
     private userRepo;
     private txRepo;
     constructor(userRepo: Repository<User>, txRepo: Repository<Transaction>);
-    getPackages(): {
+    getPackages(): ({
         id: string;
         credits: number;
         price: number;
-        bonus: number;
-    }[];
+        popular?: undefined;
+    } | {
+        id: string;
+        credits: number;
+        price: number;
+        popular: boolean;
+    })[];
     getBalance(userId: string): Promise<{
         credits: number;
     }>;

@@ -12,14 +12,14 @@ export function CreditPackages() {
   const { user, updateCredits } = useAuth();
   const { t } = useI18n();
 
-  const handlePurchase = (credits: number, bonus: number) => {
+  const handlePurchase = (credits: number) => {
     if (user) {
-      updateCredits(user.credits + credits + bonus);
+      updateCredits(user.credits + credits);
     }
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
       {CREDIT_PACKAGES.map((pkg, i) => (
         <motion.div
           key={pkg.id}
@@ -41,14 +41,9 @@ export function CreditPackages() {
           <p className="text-3xl font-bold text-gold font-[family-name:var(--font-syne)]">
             {formatCredits(pkg.credits)}
           </p>
-          <p className="text-sm text-soft-white/50 mb-1">
+          <p className="text-sm text-soft-white/50 mb-4">
             {t("credits.creditsLabel")}
           </p>
-          {pkg.bonus > 0 && (
-            <p className="text-sm text-neon-pink font-medium mb-4">
-              +{pkg.bonus} {t("credits.bonus")}
-            </p>
-          )}
 
           <p className="text-2xl font-bold text-soft-white mb-6">${pkg.price}</p>
 
@@ -66,7 +61,7 @@ export function CreditPackages() {
           <Button
             variant={pkg.popular ? "primary" : "secondary"}
             className="w-full"
-            onClick={() => handlePurchase(pkg.credits, pkg.bonus)}
+            onClick={() => handlePurchase(pkg.credits)}
           >
             {t("credits.buy")}
           </Button>
