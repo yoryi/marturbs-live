@@ -8,6 +8,7 @@ import { SessionsModule } from './sessions/sessions.module';
 import { LivekitModule } from './livekit/livekit.module';
 import { AdminModule } from './admin/admin.module';
 import { GatewayModule } from './gateway/gateway.module';
+import { PayoutModule } from './payout/payout.module';
 import { User } from './entities/user.entity';
 import { ModelProfile } from './entities/model-profile.entity';
 import { CallSession } from './entities/session.entity';
@@ -38,6 +39,7 @@ import { Transaction } from './entities/transaction.entity';
     LivekitModule,
     AdminModule,
     GatewayModule,
+    PayoutModule,
   ],
 })
 export class AppModule {}

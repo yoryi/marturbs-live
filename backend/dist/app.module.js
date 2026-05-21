@@ -17,6 +17,7 @@ const sessions_module_1 = require("./sessions/sessions.module");
 const livekit_module_1 = require("./livekit/livekit.module");
 const admin_module_1 = require("./admin/admin.module");
 const gateway_module_1 = require("./gateway/gateway.module");
+const payout_module_1 = require("./payout/payout.module");
 const user_entity_1 = require("./entities/user.entity");
 const model_profile_entity_1 = require("./entities/model-profile.entity");
 const session_entity_1 = require("./entities/session.entity");
@@ -50,6 +51,7 @@ exports.AppModule = AppModule = __decorate([
             livekit_module_1.LivekitModule,
             admin_module_1.AdminModule,
             gateway_module_1.GatewayModule,
+            payout_module_1.PayoutModule,
         ],
     })
 ], AppModule);

@@ -7,15 +7,16 @@ import {
   Video,
   DollarSign,
   User,
-  Settings,
   Power,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { EarningsChart } from "@/components/model/EarningsChart";
+import { EarningsByClient } from "@/components/model/EarningsByClient";
+import { PayoutWithdrawPanel } from "@/components/model/PayoutWithdrawPanel";
 import { IncomingCallRequests } from "@/components/model/IncomingCallRequests";
+import { ModelProfilePanel } from "@/components/model/ModelProfilePanel";
 import { cn, formatCredits } from "@/lib/utils";
 import { formatPricePerMinute } from "@/lib/pricing";
 
@@ -49,7 +50,6 @@ export default function ModelDashboardPage() {
       { id: "sessions", label: t("modelPanel.navSessions"), icon: Video },
       { id: "earnings", label: t("modelPanel.navEarnings"), icon: DollarSign },
       { id: "profile", label: t("modelPanel.navProfile"), icon: User },
-      { id: "settings", label: t("modelPanel.navSettings"), icon: Settings },
     ],
     [t],
   );
@@ -246,40 +246,36 @@ export default function ModelDashboardPage() {
               ))}
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
-              <EarningsChart />
-              <div className="glass rounded-2xl p-6 border border-white/5">
-                <h3 className="font-semibold mb-6">{t("modelPanel.recentSessions")}</h3>
-                <ul className="space-y-4">
-                  {mockSessions.map((s) => (
-                    <li
-                      key={s.id}
-                      className="flex items-center gap-4 p-3 rounded-xl bg-bg-main/50"
-                    >
-                      <img src={s.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-soft-white">{s.client}</p>
-                        <p className="text-xs text-soft-white/40">{s.duration}</p>
-                      </div>
-                      <span className="text-gold font-bold">+{formatCredits(s.earned)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="glass rounded-2xl p-6 border border-white/5 max-w-2xl">
+              <h3 className="font-semibold mb-6">{t("modelPanel.recentSessions")}</h3>
+              <ul className="space-y-4">
+                {mockSessions.map((s) => (
+                  <li
+                    key={s.id}
+                    className="flex items-center gap-4 p-3 rounded-xl bg-bg-main/50"
+                  >
+                    <img src={s.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-soft-white">{s.client}</p>
+                      <p className="text-xs text-soft-white/40">{s.duration}</p>
+                    </div>
+                    <span className="text-gold font-bold">+{formatCredits(s.earned)}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </>
         )}
 
         {activeNav === "earnings" && (
-          <div className="max-w-2xl">
-            <EarningsChart />
+          <div className="space-y-6 max-w-3xl">
+            <EarningsByClient />
+            <PayoutWithdrawPanel />
           </div>
         )}
 
-        {(activeNav === "profile" || activeNav === "settings") && (
-          <div className="glass rounded-2xl p-8 border border-white/5 text-center text-soft-white/50">
-            {t("modelPanel.comingSoon")}
-          </div>
+        {activeNav === "profile" && (
+          <ModelProfilePanel onGoToEarnings={() => setActiveNav("earnings")} />
         )}
       </div>
     </div>
